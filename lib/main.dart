@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 
@@ -15,6 +17,20 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   var _nameFieldController = TextEditingController();
+
+  Future _gotToNextScreen(BuildContext context) async {
+    Map results = await Navigator.of(context).push(
+      MaterialPageRoute<Map>(
+          builder: (BuildContext context) {
+            return NextScreen(name: _nameFieldController.text);
+          })
+    );
+    if (results != null && results.containsKey('info')) {
+      _nameFieldController.text = results['info'];
+    } else {
+      print('Nothing!');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +55,7 @@ class _HomeState extends State<Home> {
             title: RaisedButton(
                 child: Text("Send To Next Screen"),
                 onPressed: () {
-                  var router = MaterialPageRoute(
-                    builder: (BuildContext context) => NextScreen(name: _nameFieldController.text)
-                  );
-                  Navigator.of(context).push(router);
+                  _gotToNextScreen(context);
                 }),
           )
         ],
@@ -62,6 +75,8 @@ class NextScreen extends StatefulWidget {
 }
 
 class _NextScreenState extends State<NextScreen> {
+  var _backTextFieldController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,8 +85,29 @@ class _NextScreenState extends State<NextScreen> {
         title: Text('Second Screen'),
         centerTitle: true,
       ),
-      body: ListTile(
-        title: Text('${widget.name}'),
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text('${widget.name}'),
+            ),
+            ListTile(
+              title: TextField(
+                controller: _backTextFieldController,
+              ),
+            ),
+            ListTile(
+              title: FlatButton(
+                onPressed: () {
+                  Navigator.pop(context, {
+                    'info': _backTextFieldController.text
+                  });
+                },
+                child: Text('Send Data Back'),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
